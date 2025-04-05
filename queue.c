@@ -1,107 +1,110 @@
 #include "queue.h"
 #include "tile_game.h"
-#include "linked_list.h"
 #include <stdlib.h>
+#include <string.h>
 
-// Enqueue inserts at the tail (FIFO behavior)
+// Used to copy game state so we can queue 4 possible moves
+struct game_state *copy_state(struct game_state *state)
+{
+    struct game_state *new_state = (struct game_state *)malloc(sizeof(struct game_state));
+    if (!new_state)
+    {
+        return NULL;
+    }
+    memcpy(new_state, state, sizeof(struct game_state));
+    return new_state;
+}
+
 void enqueue(struct queue *q, struct game_state state)
 {
-    insert_at_tail(&(q->data), serialize(state));
+    // inserts at the _head_
+    // check if it is possible to move up
+    if (state.empty_row != 3)
+    {
+        struct game_state *up_state = copy_state(&state);
+        move_up(up_state);
+        insert_at_head(&(q->data), serialize(*up_state));
+        free(up_state);
+    }
+
+    // check if it is possible to move down
+    if (state.empty_row != 0)
+    {
+        struct game_state *down_state = copy_state(&state);
+        move_down(down_state);
+        insert_at_head(&(q->data), serialize(*down_state));
+        free(down_state);
+    }
+
+    // check if it is possible to move left
+    if (state.empty_col != 3)
+    {
+        struct game_state *left_state = copy_state(&state);
+        move_left(left_state);
+        insert_at_head(&(q->data), serialize(*left_state));
+        free(left_state);
+    }
+
+    // check if it is possible to move right
+    if (state.empty_col != 0)
+    {
+        struct game_state *right_state = copy_state(&state);
+        move_right(right_state);
+        insert_at_head(&(q->data), serialize(*right_state));
+        free(right_state);
+    }
 }
 
-// Dequeue removes from the head (FIFO behavior)
 struct game_state dequeue(struct queue *q)
 {
-    return deserialize(remove_from_head(&(q->data)));
+    // dequeue removes from the _tail_
+    return deserialize(remove_from_tail(&(q->data)));
 }
 
-// Check if this state has already been visited
-int already_visited(struct game_state *visited, size_t count, struct game_state state)
+size_t finished_check(struct game_state cur_state)
 {
-    for (size_t i = 0; i < count; i++)
+    for (int i = 0; i < 4; i++)
     {
-        int match = 1;
-        for (int r = 0; r < 4 && match; r++)
+        for (int j = 0; j < 4; j++)
         {
-            for (int c = 0; c < 4; c++)
+            if (i * 4 + j != cur_state.tiles[i][j])
             {
-                if (visited[i].tiles[r][c] != state.tiles[r][c])
-                {
-                    match = 0;
-                    break;
-                }
+                return 0;
             }
         }
-        if (match)
-            return 1;
     }
-    return 0;
+    return 1;
 }
 
-// BFS to find minimum number of moves
 int number_of_moves(struct game_state start)
 {
-    struct queue q = {0};
-    enqueue(&q, start);
+    // implement a BFS that determines the shortest moves to solve a Tiles game
+    struct queue *q = (struct queue *)malloc(sizeof(struct queue));
 
-    struct game_state visited[100000];
-    size_t count = 0;
+    // inserts start state into ll
+    insert_at_head(&(q->data), serialize(start));
 
-    while (q.data.head)
+    // we run until there are no more cases; runs forever if solution is not found
+    int max_cases = 50;
+    while (q->data.head != NULL && max_cases < 50)
     {
-        struct game_state s = dequeue(&q);
-
-        if (already_visited(visited, count, s))
-            continue;
-
-        if (count < 100000)
-            visited[count++] = s;
-
-        // Check if solved
-        int done = 1;
-        for (int i = 0, v = 1; i < 4 && done; i++)
+        // dequeue next in line
+        struct game_state cur_state = dequeue(q);
+        // check if we reached final state
+        if (finished_check(cur_state) != 0)
         {
-            for (int j = 0; j < 4; j++, v++)
-            {
-                if ((i == 3 && j == 3 && s.tiles[i][j] != 0) ||
-                    ((i != 3 || j != 3) && s.tiles[i][j] != v))
-                {
-                    done = 0;
-                    break;
-                }
-            }
+            // clean up
+            free_list(q->data);
+            free(q);
+            // return steps taken to reach end
+            return cur_state.num_steps;
         }
-
-        if (done)
-            return s.num_steps;
-
-        // Generate valid next states
-        struct game_state n;
-        if (s.empty_row > 0) // Can move tile down (empty up)
-        {
-            n = s;
-            move_up(&n);
-            enqueue(&q, n);
-        }
-        if (s.empty_row < 3) // Can move tile up (empty down)
-        {
-            n = s;
-            move_down(&n);
-            enqueue(&q, n);
-        }
-        if (s.empty_col > 0) // Can move tile right (empty left)
-        {
-            n = s;
-            move_right(&n);
-            enqueue(&q, n);
-        }
-        if (s.empty_col < 3) // Can move tile left (empty right)
-        {
-            n = s;
-            move_left(&n);
-            enqueue(&q, n);
-        }
+        // loads next possible moves
+        enqueue(q, cur_state);
+        max_cases++;
     }
-
-    return -1; // Unsolvable (shouldn't happen with valid boards)
+    // clean up
+    free_list(q->data);
+    free(q);
+    return 0;
 }
