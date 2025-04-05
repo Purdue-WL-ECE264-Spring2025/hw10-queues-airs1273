@@ -75,7 +75,6 @@ size_t finished_check(struct game_state cur_state)
     }
     return 1;
 }
-
 int number_of_moves(struct game_state start)
 {
     struct queue *q = (struct queue *)malloc(sizeof(struct queue));
@@ -84,8 +83,18 @@ int number_of_moves(struct game_state start)
     uint64_t visited[100000];
     size_t visited_count = 0;
 
+    int max_iterations = 1000000; // Limit the number of while loop iterations
+    int iterations = 0;
+
     while (q->data.head != NULL)
     {
+        if (iterations++ >= max_iterations)
+        {
+            free_list(q->data);
+            free(q);
+            return -1; // Timeout or too deep
+        }
+
         struct game_state cur_state = dequeue(q);
         uint64_t ser = serialize(cur_state);
 
