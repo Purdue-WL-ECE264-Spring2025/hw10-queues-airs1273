@@ -78,33 +78,47 @@ size_t finished_check(struct game_state cur_state)
 
 int number_of_moves(struct game_state start)
 {
-    // implement a BFS that determines the shortest moves to solve a Tiles game
     struct queue *q = (struct queue *)malloc(sizeof(struct queue));
-
-    // inserts start state into ll
     insert_at_head(&(q->data), serialize(start));
 
-    // we run until there are no more cases; runs forever if solution is not found
-    int max_cases = 50;
-    while (q->data.head != NULL && max_cases < 50)
+    uint64_t visited[100000];
+    size_t visited_count = 0;
+
+    while (q->data.head != NULL)
     {
-        // dequeue next in line
         struct game_state cur_state = dequeue(q);
-        // check if we reached final state
-        if (finished_check(cur_state) != 0)
+        uint64_t ser = serialize(cur_state);
+
+        // Check if already visited
+        int already_seen = 0;
+        for (size_t i = 0; i < visited_count; i++)
         {
-            // clean up
+            if (visited[i] == ser)
+            {
+                already_seen = 1;
+                break;
+            }
+        }
+
+        if (already_seen)
+            continue;
+
+        // Mark as visited
+        visited[visited_count++] = ser;
+
+        // Check if solved
+        if (finished_check(cur_state))
+        {
             free_list(q->data);
             free(q);
-            // return steps taken to reach end
             return cur_state.num_steps;
         }
-        // loads next possible moves
+
+        // Enqueue all next states (let enqueue handle move gen)
         enqueue(q, cur_state);
-        max_cases++;
     }
-    // clean up
+
     free_list(q->data);
     free(q);
-    return 0;
+    return -1;
 }
