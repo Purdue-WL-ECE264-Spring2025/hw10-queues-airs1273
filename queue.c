@@ -75,38 +75,41 @@ size_t finished_check(struct game_state cur_state)
 
 int number_of_moves(struct game_state start)
 {
-    // implement a BFS that determines the shortest moves to solve a Tiles game
-    struct queue *q = (struct queue *)malloc(sizeof(struct queue));
+    const int MAX_MOVES = 80; // You can adjust this value
 
+    struct queue *q = (struct queue *)malloc(sizeof(struct queue));
     if (q == NULL)
     {
         return 0;
     }
     q->data.head = NULL;
-    // inserts start state into ll
+
     insert_at_head(&(q->data), serialize(start));
 
-    // we run until there are no more cases; runs forever if solution is not found
     while (q->data.head != NULL)
     {
-        // printf("yo\n");
-        // dequeue next in line
         struct game_state cur_state = dequeue(q);
-        // check if we reached final state
-        if (finished_check(cur_state) != 0)
+
+        if (cur_state.num_steps > MAX_MOVES)
         {
-            // clean up
+            // Clean up and return -1 if we exceed allowed max depth
             free_list(q->data);
             free(q);
-            // return steps taken to reach end
+            return -1;
+        }
+
+        if (finished_check(cur_state))
+        {
+            free_list(q->data);
+            free(q);
             printf("steps: %d\n", cur_state.num_steps);
             return cur_state.num_steps;
         }
-        // loads next possible moves
+
         enqueue(q, cur_state);
     }
-    // clean up
+
     free_list(q->data);
     free(q);
-    return 0;
+    return -1;
 }
