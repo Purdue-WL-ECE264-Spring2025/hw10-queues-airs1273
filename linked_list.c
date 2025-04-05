@@ -20,28 +20,29 @@ void insert_at_head(struct linked_list *list, size_t value)
   // insert value at head
   struct list_node *ptr = new_node(value);
   ptr->next = list->head;
-  list->head = ptr;
+
+  // update new head
+  list->head = ptr->next;
 }
 
 void insert_at_tail(struct linked_list *list, size_t value)
 {
-  struct list_node *node = new_node(value);
-  if (!node)
+  // insert value at tail
+  if (list->head == NULL)
+  {
+    // create new node and insert at head
+    struct list_node *ptr = new_node(value);
+    list->head = ptr;
     return;
+  }
 
-  if (!list->head)
+  // else case where there is something in ll
+  struct list_node *ptr = list->head;
+  while ((ptr->next) != NULL)
   {
-    list->head = node;
+    ptr = ptr->next;
   }
-  else
-  {
-    struct list_node *ptr = list->head;
-    while (ptr->next)
-    {
-      ptr = ptr->next;
-    }
-    ptr->next = node;
-  }
+  ptr->next = new_node(value);
 }
 
 size_t remove_from_head(struct linked_list *list)
@@ -49,10 +50,13 @@ size_t remove_from_head(struct linked_list *list)
   // remove value from head
   struct list_node *ptr = list->head;
   size_t value = ptr->value;
+
+  // if ll is empty, do nothing
   if (ptr == NULL)
   {
     return 0;
   }
+  // place head's child as new head
   list->head = ptr->next;
   free(ptr);
   return value;
@@ -61,14 +65,28 @@ size_t remove_from_head(struct linked_list *list)
 size_t remove_from_tail(struct linked_list *list)
 {
   // remove value from tail
+  struct list_node *parent = list->head;
   struct list_node *ptr = list->head;
   if (ptr == NULL)
   {
     return 0;
   }
+
+  // walk to the end of the ll
   while ((ptr->next) != NULL)
   {
+    parent = ptr;
     ptr = ptr->next;
+  }
+
+  // if head is last, set head to null; otherwise disconnect child from parent
+  if (ptr == list->head)
+  {
+    list->head = NULL;
+  }
+  else
+  {
+    parent->next = NULL;
   }
   size_t value = ptr->value;
   free(ptr);
@@ -78,13 +96,15 @@ size_t remove_from_tail(struct linked_list *list)
 void free_list(struct linked_list list)
 {
   // free linked list
-  struct list_node *ptr = list.head;
-  while (ptr)
+  struct list_node *ptr1 = list.head;
+  struct list_node *ptr2 = list.head;
+  while (ptr1->next != NULL)
   {
-    struct list_node *next = ptr->next;
-    free(ptr);
-    ptr = next;
+    ptr1 = ptr1->next;
+    free(ptr2);
+    ptr2 = ptr1;
   }
+  free(ptr1);
 }
 
 // Utility function to help you debugging, do not modify
