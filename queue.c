@@ -17,39 +17,38 @@ struct game_state *copy_state(struct game_state *state)
 
 void enqueue(struct queue *q, struct game_state state)
 {
-    // inserts at the _head_
-    // check if it is possible to move up
     if (state.empty_row != 3)
     {
         struct game_state *up_state = copy_state(&state);
         move_up(up_state);
+        up_state->num_steps = state.num_steps + 1;
         insert_at_head(&(q->data), serialize(*up_state));
         free(up_state);
     }
 
-    // check if it is possible to move down
     if (state.empty_row != 0)
     {
         struct game_state *down_state = copy_state(&state);
         move_down(down_state);
+        down_state->num_steps = state.num_steps + 1;
         insert_at_head(&(q->data), serialize(*down_state));
         free(down_state);
     }
 
-    // check if it is possible to move left
     if (state.empty_col != 3)
     {
         struct game_state *left_state = copy_state(&state);
         move_left(left_state);
+        left_state->num_steps = state.num_steps + 1;
         insert_at_head(&(q->data), serialize(*left_state));
         free(left_state);
     }
 
-    // check if it is possible to move right
     if (state.empty_col != 0)
     {
         struct game_state *right_state = copy_state(&state);
         move_right(right_state);
+        right_state->num_steps = state.num_steps + 1;
         insert_at_head(&(q->data), serialize(*right_state));
         free(right_state);
     }
