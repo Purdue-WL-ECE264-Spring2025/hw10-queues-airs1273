@@ -17,10 +17,11 @@ struct list_node *new_node(size_t value)
 
 void insert_at_head(struct linked_list *list, size_t value)
 {
+  // insert value at head
   struct list_node *ptr = new_node(value);
-  if (!ptr)
-    return;
   ptr->next = list->head;
+
+  // update new head
   list->head = ptr;
 }
 
@@ -47,14 +48,13 @@ void insert_at_tail(struct linked_list *list, size_t value)
 size_t remove_from_head(struct linked_list *list)
 {
   // remove value from head
-  struct list_node *ptr = list->head;
-  size_t value = ptr->value;
-
-  // if ll is empty, do nothing
-  if (ptr == NULL)
+  if (list == NULL || list->head == NULL)
   {
     return 0;
   }
+  struct list_node *ptr = list->head;
+  size_t value = ptr->value;
+
   // place head's child as new head
   list->head = ptr->next;
   free(ptr);
@@ -63,14 +63,15 @@ size_t remove_from_head(struct linked_list *list)
 
 size_t remove_from_tail(struct linked_list *list)
 {
-  // remove value from tail
-  struct list_node *parent = list->head;
-  struct list_node *ptr = list->head;
-  if (ptr == NULL)
+  if (list == NULL || list->head == NULL)
   {
     return 0;
   }
+  // remove value from tail
+  struct list_node *parent = list->head;
+  struct list_node *ptr = list->head;
 
+  // printf("%ld", ptr->value);
   // walk to the end of the ll
   while ((ptr->next) != NULL)
   {
@@ -94,13 +95,20 @@ size_t remove_from_tail(struct linked_list *list)
 
 void free_list(struct linked_list list)
 {
-  struct list_node *cur = list.head;
-  while (cur)
+  // free linked list
+  if (list.head == NULL)
   {
-    struct list_node *next = cur->next;
-    free(cur);
-    cur = next;
+    return;
   }
+  struct list_node *ptr1 = list.head;
+  struct list_node *ptr2 = list.head;
+  while (ptr1->next != NULL)
+  {
+    ptr1 = ptr1->next;
+    free(ptr2);
+    ptr2 = ptr1;
+  }
+  free(ptr1);
 }
 
 // Utility function to help you debugging, do not modify
