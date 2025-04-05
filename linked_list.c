@@ -17,12 +17,11 @@ struct list_node *new_node(size_t value)
 
 void insert_at_head(struct linked_list *list, size_t value)
 {
-  // insert value at head
   struct list_node *ptr = new_node(value);
+  if (!ptr)
+    return;
   ptr->next = list->head;
-
-  // update new head
-  list->head = ptr->next;
+  list->head = ptr;
 }
 
 void insert_at_tail(struct linked_list *list, size_t value)
@@ -95,16 +94,13 @@ size_t remove_from_tail(struct linked_list *list)
 
 void free_list(struct linked_list list)
 {
-  // free linked list
-  struct list_node *ptr1 = list.head;
-  struct list_node *ptr2 = list.head;
-  while (ptr1->next != NULL)
+  struct list_node *cur = list.head;
+  while (cur)
   {
-    ptr1 = ptr1->next;
-    free(ptr2);
-    ptr2 = ptr1;
+    struct list_node *next = cur->next;
+    free(cur);
+    cur = next;
   }
-  free(ptr1);
 }
 
 // Utility function to help you debugging, do not modify
