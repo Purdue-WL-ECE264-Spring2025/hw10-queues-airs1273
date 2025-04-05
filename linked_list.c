@@ -20,21 +20,28 @@ void insert_at_head(struct linked_list *list, size_t value)
   // insert value at head
   struct list_node *ptr = new_node(value);
   ptr->next = list->head;
+  list->head = ptr;
 }
 
 void insert_at_tail(struct linked_list *list, size_t value)
 {
-  // insert value at tail
-  if (list->head == NULL)
+  struct list_node *node = new_node(value);
+  if (!node)
+    return;
+
+  if (!list->head)
   {
-    return new_node(value);
+    list->head = node;
   }
-  struct list_node *ptr = list->head;
-  while ((ptr->next) != NULL)
+  else
   {
-    ptr = ptr->next;
+    struct list_node *ptr = list->head;
+    while (ptr->next)
+    {
+      ptr = ptr->next;
+    }
+    ptr->next = node;
   }
-  ptr->next = new_node(value);
 }
 
 size_t remove_from_head(struct linked_list *list)
@@ -44,7 +51,7 @@ size_t remove_from_head(struct linked_list *list)
   size_t value = ptr->value;
   if (ptr == NULL)
   {
-    return NULL;
+    return 0;
   }
   list->head = ptr->next;
   free(ptr);
@@ -57,7 +64,7 @@ size_t remove_from_tail(struct linked_list *list)
   struct list_node *ptr = list->head;
   if (ptr == NULL)
   {
-    return NULL;
+    return 0;
   }
   while ((ptr->next) != NULL)
   {
@@ -71,15 +78,13 @@ size_t remove_from_tail(struct linked_list *list)
 void free_list(struct linked_list list)
 {
   // free linked list
-  struct list_node *ptr1 = list.head;
-  struct list_node *ptr2 = list.head;
-  while (ptr1->next != NULL)
+  struct list_node *ptr = list.head;
+  while (ptr)
   {
-    ptr1 = ptr1->next;
-    free(ptr2);
-    ptr2 = ptr1;
+    struct list_node *next = ptr->next;
+    free(ptr);
+    ptr = next;
   }
-  free(ptr1);
 }
 
 // Utility function to help you debugging, do not modify
