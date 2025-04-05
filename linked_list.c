@@ -17,32 +17,32 @@ struct list_node *new_node(size_t value)
 
 void insert_at_head(struct linked_list *list, size_t value)
 {
-  // insert value at head
   struct list_node *ptr = new_node(value);
+  if (!ptr)
+    return;
   ptr->next = list->head;
-
-  // update new head
   list->head = ptr;
 }
 
 void insert_at_tail(struct linked_list *list, size_t value)
 {
-  // insert value at tail
+  struct list_node *node = new_node(value);
+  if (!node)
+    return;
+
   if (list->head == NULL)
   {
-    // create new node and insert at head
-    struct list_node *ptr = new_node(value);
-    list->head = ptr;
+    list->head = node;
     return;
   }
 
-  // else case where there is something in ll
   struct list_node *ptr = list->head;
-  while ((ptr->next) != NULL)
+  while (ptr->next != NULL)
   {
     ptr = ptr->next;
   }
-  ptr->next = new_node(value);
+
+  ptr->next = node;
 }
 
 size_t remove_from_head(struct linked_list *list)
