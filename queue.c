@@ -78,7 +78,7 @@ size_t finished_check(struct game_state cur_state)
 
 int number_of_moves(struct game_state start)
 {
-    const int MAX_MOVES = 14; // You can adjust this value
+    const int MAX_MOVES = 9; // You can adjust this value
 
     struct queue *q = (struct queue *)malloc(sizeof(struct queue));
     if (q == NULL)
